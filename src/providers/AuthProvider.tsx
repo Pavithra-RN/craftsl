@@ -31,6 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     const supabase = createClient()
+    localStorage.clear()
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)

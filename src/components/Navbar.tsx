@@ -7,6 +7,7 @@ import { ShoppingCart, Menu, X } from 'lucide-react';
 import { useCart } from '@/providers/CartProvider';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { useAuth } from '@/providers/AuthProvider';
 
 
 
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [navName, setNavName] = useState('');
   const [navRole, setNavRole] = useState('');
   const [navLoading, setNavLoading] = useState(false);
+  const { signOut } = useAuth()
 
   useEffect(() => {
     const supabase = createClient();
@@ -83,13 +85,9 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    localStorage.removeItem('craftsl-auth')
-    localStorage.removeItem('craftsl_cart')
-    setNavUser(null)
-    setNavName('')
-    window.location.replace('/')
+    localStorage.clear()
+    await signOut()
+    window.location.href = '/'
   }
 
   const role = navRole;
