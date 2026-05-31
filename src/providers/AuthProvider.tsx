@@ -71,10 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         console.log('Auth event:', event)
         if (event === 'SIGNED_OUT') {
+          localStorage.removeItem('craftsl-auth')
           setUser(null)
           setProfile(null)
           setLoading(false)
           return
+        }
+        if (event === 'SIGNED_IN' && session) {
+          localStorage.setItem('craftsl-auth', JSON.stringify(session))
         }
         try {
           if (session?.user) {

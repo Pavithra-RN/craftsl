@@ -17,16 +17,12 @@ function LoginContent() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
-    document.cookie = 
-      'craftsl-logged-out=; path=/; max-age=0'
-    sessionStorage.removeItem('craftsl-logged-out')
     e.preventDefault()
     setErrorMsg('')
     setLoading(true)
 
     try {
-      const { data, error } = await supabase
-        .auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
       if (error) {
         setErrorMsg(error.message)
@@ -34,24 +30,15 @@ function LoginContent() {
         return
       }
 
-      const accessToken = data.session?.access_token
       const userId = data.user?.id
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
 
-      const res = await fetch(
-        `https://mmcxkgjbuscrrpuxxczs.supabase.co/rest/v1/profiles?id=eq.${userId}&select=role`,
-        {
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tY3hrZ2pidXNjcnJwdXh4Y3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNTY5NDEsImV4cCI6MjA5NTczMjk0MX0.LugDTvtj0XIsTQMh9OSvT2VgT42R58lGG5bFXBm3veI',
-            'Authorization': `Bearer ${accessToken}`
-          }
-        }
-      )
-      const profiles = await res.json()
-      const role = profiles?.[0]?.role
+      const role = profileData?.role
       console.log('Login role:', role)
-
-      // Small delay to allow cookie to be set
-      await new Promise(resolve => setTimeout(resolve, 500))
 
       if (role === 'admin') {
         window.location.href = '/admin'
@@ -62,8 +49,7 @@ function LoginContent() {
       }
 
     } catch (err: unknown) {
-      const message = err instanceof Error ? 
-        err.message : 'An unexpected error occurred.'
+      const message = err instanceof Error ? err.message : 'An unexpected error occurred.'
       setErrorMsg(message)
       setLoading(false)
     }

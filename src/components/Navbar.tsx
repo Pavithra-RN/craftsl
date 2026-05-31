@@ -23,8 +23,8 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await signOut()
-    // replace() prevents the logged-in page from being in browser history
-    window.location.replace('/')
+    localStorage.clear()
+    window.location.href = '/'
   }
 
   const role = profile?.role || '';
