@@ -83,14 +83,17 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    sessionStorage.setItem('craftsl-logged-out', 'true')
     localStorage.removeItem('craftsl-auth')
     localStorage.removeItem('craftsl_cart')
     setNavUser(null)
     setNavName('')
-    const supabase = createClient()
-    await supabase.auth.signOut({ scope: 'global' })
-    window.location.replace('/')
+    
+    // Use form POST to call server-side logout
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = '/api/auth/logout'
+    document.body.appendChild(form)
+    form.submit()
   }
 
   const role = navRole;
