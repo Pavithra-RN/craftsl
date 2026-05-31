@@ -34,3 +34,13 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Environment Variables
+
+The project requires the following environment variables to be set:
+- `NEXT_PUBLIC_SUPABASE_URL`: The Supabase project URL.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: The Supabase anon public key.
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: The Stripe publishable key.
+- `STRIPE_SECRET_KEY`: The Stripe secret API key.
+- `NEXT_PUBLIC_SITE_URL`: The site's absolute URL used for server-side redirects (e.g. on Vercel deployments).
+
