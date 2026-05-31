@@ -1,6 +1,6 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/utils/supabase/client';
 import ProductDetailInteractive from '@/components/ProductDetailInteractive';
 import { Metadata } from 'next';
 

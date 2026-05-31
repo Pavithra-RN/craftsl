@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/utils/supabase/client';
 import { CheckCircle, ChevronRight } from 'lucide-react';
 import { Metadata } from 'next';
 
