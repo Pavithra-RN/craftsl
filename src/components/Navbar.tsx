@@ -83,14 +83,18 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    localStorage.removeItem('craftsl-auth')
-    localStorage.removeItem('craftsl_cart')
-    setNavUser(null)
-    setNavName('')
-    // Force hard redirect to clear all state
-    window.location.replace('/')
+    try {
+      localStorage.removeItem('craftsl-auth')
+      localStorage.removeItem('craftsl_cart')
+      setNavUser(null)
+      setNavName('')
+      const supabase = createClient()
+      await supabase.auth.signOut()
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      window.location.replace('/')
+    }
   }
 
   const role = navRole;
