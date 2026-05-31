@@ -11,11 +11,6 @@ export function createClient() {
     auth: {
       persistSession: true,
       storageKey: 'craftsl-auth',
-      storage: {
-        getItem: (key) => typeof window !== 'undefined' ? localStorage.getItem(key) : null,
-        setItem: (key, value) => typeof window !== 'undefined' ? localStorage.setItem(key, value) : undefined,
-        removeItem: (key) => typeof window !== 'undefined' ? localStorage.removeItem(key) : undefined,
-      },
       autoRefreshToken: true,
       detectSessionInUrl: false,
     }

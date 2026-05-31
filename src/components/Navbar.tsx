@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingCart, Menu, X } from 'lucide-react';
@@ -11,8 +11,15 @@ import { useAuth } from '@/providers/AuthProvider';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { totalCount } = useCart();
   const { user, profile, loading, signOut } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  console.log('Navbar auth state:', { user, profile, loading, mounted });
 
   const handleLogout = async () => {
     try {
@@ -30,7 +37,7 @@ export default function Navbar() {
   const role = profile?.role || '';
 
   const renderAuthSection = () => {
-    if (loading) {
+    if (!mounted || loading) {
       return <div style={{width: '140px', height: '36px'}} />;
     }
 
