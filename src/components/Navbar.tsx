@@ -83,19 +83,14 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    setNavUser(null)
-    setNavName('')
-
-    // Clear localStorage session manually
-    localStorage.removeItem('craftsl-auth')
-    localStorage.removeItem('craftsl_cart')
-    
-    // Sign out from Supabase
     const supabase = createClient()
     await supabase.auth.signOut()
-    
-    // Force hard redirect to homepage
-    window.location.href = '/'
+    localStorage.removeItem('craftsl-auth')
+    localStorage.removeItem('craftsl_cart')
+    setNavUser(null)
+    setNavName('')
+    // Force hard redirect to clear all state
+    window.location.replace('/')
   }
 
   const role = navRole;

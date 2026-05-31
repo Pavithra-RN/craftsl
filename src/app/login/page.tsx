@@ -47,6 +47,9 @@ function LoginContent() {
       const role = profiles?.[0]?.role
       console.log('Login role:', role)
 
+      // Small delay to allow cookie to be set
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       if (role === 'admin') {
         window.location.href = '/admin'
       } else if (role === 'artisan') {
