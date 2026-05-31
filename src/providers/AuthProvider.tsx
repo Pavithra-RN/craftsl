@@ -56,6 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      // Check if user manually logged out
+      const loggedOut = sessionStorage.getItem('craftsl-logged-out')
+      if (loggedOut) {
+        setLoading(false)
+        return
+      }
       if (session?.user) {
         setUser(session.user);
         localStorage.setItem('craftsl-auth', JSON.stringify({
@@ -120,17 +126,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const interval = setInterval(async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Check if user manually logged out
+      const loggedOut = sessionStorage.getItem('craftsl-logged-out')
+      if (loggedOut) return
+      
+      const { data: { session } } = await supabase.auth.getSession()
       if (!session && user) {
-        // Session is gone but state still has user — clear it
-        setUser(null);
-        setProfile(null);
+        setUser(null)
+        setProfile(null)
+        localStorage.removeItem('craftsl-auth')
       }
-    }, 60000); // check every 60 seconds
-    
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [user])
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, signOut }}>

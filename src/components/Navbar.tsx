@@ -88,8 +88,22 @@ export default function Navbar() {
       localStorage.removeItem('craftsl_cart')
       setNavUser(null)
       setNavName('')
+      
       const supabase = createClient()
-      await supabase.auth.signOut()
+      await supabase.auth.signOut({ scope: 'global' })
+      
+      // Clear all Supabase cookies by setting them 
+      // to expire in the past
+      document.cookie.split(';').forEach(cookie => {
+        const name = cookie.split('=')[0].trim()
+        if (name.includes('supabase') || 
+            name.includes('sb-') || 
+            name.includes('craftsl')) {
+          document.cookie = name + 
+            '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        }
+      })
+      sessionStorage.setItem('craftsl-logged-out', 'true')
     } catch (err) {
       console.error('Logout error:', err)
     } finally {
