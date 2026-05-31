@@ -5,44 +5,92 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingCart, Menu, X } from 'lucide-react';
 import { useCart } from '@/providers/CartProvider';
-import { useAuth } from '@/providers/AuthProvider';
-
-
+import { createClient } from '@/utils/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const { totalCount } = useCart();
-  const { user, profile, loading, signOut } = useAuth();
+  const [navUser, setNavUser] = useState<User | null>(null);
+  const [navName, setNavName] = useState('');
+  const [navRole, setNavRole] = useState('');
+  const [navLoading, setNavLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    // Read localStorage first for instant display — no async wait
+    const raw = localStorage.getItem('craftsl-auth')
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw)
+        if (parsed?.user) {
+          setNavUser(parsed.user)
+          const name = parsed.user.user_metadata?.full_name ||
+                       parsed.user.email?.split('@')[0] || 'User'
+          setNavName(name)
+          setNavRole(parsed.user.user_metadata?.role || '')
+        }
+      } catch (e) {
+        console.error('localStorage parse error:', e)
+      }
+    }
+    setNavLoading(false)
 
-  console.log('Navbar auth state:', { user, profile, loading, mounted });
+    // Subscribe to auth changes for real-time accuracy
+    const supabase = createClient()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        setNavUser(null)
+        setNavName('')
+        setNavRole('')
+        return
+      }
+      if (session?.user) {
+        setNavUser(session.user)
+        const name = session.user.user_metadata?.full_name ||
+                     session.user.email?.split('@')[0] || 'User'
+        setNavName(name)
+        // Fetch accurate name and role from profiles table
+        const res = await fetch(
+          'https://mmcxkgjbuscrrpuxxczs.supabase.co/rest/v1/profiles?id=eq.' +
+          session.user.id + '&select=full_name,role',
+          {
+            headers: {
+              'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+              'Authorization': 'Bearer ' + session.access_token
+            }
+          }
+        )
+        const profiles = await res.json()
+        if (profiles?.[0]) {
+          if (profiles[0].full_name) setNavName(profiles[0].full_name)
+          if (profiles[0].role) setNavRole(profiles[0].role)
+        }
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const handleLogout = async () => {
-    await signOut()
+    const supabase = createClient()
+    await supabase.auth.signOut()
     localStorage.clear()
+    setNavUser(null)
+    setNavName('')
+    setNavRole('')
     window.location.href = '/'
   }
 
-  const role = profile?.role || '';
-
   const renderAuthSection = () => {
-    if (!mounted || loading) {
+    if (navLoading) {
       return <div style={{width: '140px', height: '36px'}} />;
     }
 
-    if (user) {
-      const displayName = profile?.full_name || 
-                          user.user_metadata?.full_name || 
-                          user.email?.split('@')[0] || 
-                          'User';
+    if (navUser) {
       return (
         <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
           <span style={{fontSize: '14px', color: '#374151'}}>
-            Hello, <strong>{displayName}</strong>
+            Hello, <strong>{navName}</strong>
           </span>
           <button
             onClick={handleLogout}
@@ -95,6 +143,7 @@ export default function Navbar() {
       </div>
     );
   };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/95 backdrop-blur-md transition-shadow duration-300 hover:shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -129,7 +178,7 @@ export default function Navbar() {
                 <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#8B1A1A] transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
-            {role === 'artisan' && (
+            {navRole === 'artisan' && (
               <Link
                 href="/dashboard"
                 className="relative py-2 text-sm font-medium text-[#8B1A1A] hover:text-[#8B1A1A]/80 transition-colors duration-200 group"
@@ -138,7 +187,7 @@ export default function Navbar() {
                 <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#8B1A1A] transition-all duration-300 group-hover:w-full" />
               </Link>
             )}
-            {role === 'admin' && (
+            {navRole === 'admin' && (
               <Link
                 href="/admin"
                 className="relative py-2 text-sm font-medium text-[#8B1A1A] hover:text-[#8B1A1A]/80 transition-colors duration-200 group"
@@ -225,7 +274,7 @@ export default function Navbar() {
           >
             About
           </Link>
-          {role === 'artisan' && (
+          {navRole === 'artisan' && (
             <Link
               href="/dashboard"
               className="block rounded-lg px-4 py-3 text-base font-medium text-[#8B1A1A] hover:bg-gray-50 transition-colors"
@@ -234,7 +283,7 @@ export default function Navbar() {
               Dashboard
             </Link>
           )}
-          {role === 'admin' && (
+          {navRole === 'admin' && (
             <Link
               href="/admin"
               className="block rounded-lg px-4 py-3 text-base font-medium text-[#8B1A1A] hover:bg-gray-50 transition-colors"
