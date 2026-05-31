@@ -58,13 +58,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        const profileData = await fetchProfile(session.user.id);
-        setProfile(profileData);
         localStorage.setItem('craftsl-auth', JSON.stringify({
           access_token: session.access_token,
           refresh_token: session.refresh_token,
           user: session.user
         }));
+        try {
+          const profileData = await fetchProfile(session.user.id);
+          setProfile(profileData);
+        } catch (err) {
+          console.error('fetchProfile failed:', err);
+        }
       } else {
         setUser(null);
         setProfile(null);
@@ -93,13 +97,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             event === 'USER_UPDATED') {
           if (session?.user) {
             setUser(session.user);
-            const profileData = await fetchProfile(session.user.id);
-            setProfile(profileData);
             localStorage.setItem('craftsl-auth', JSON.stringify({
               access_token: session.access_token,
               refresh_token: session.refresh_token,
               user: session.user
             }));
+            try {
+              const profileData = await fetchProfile(session.user.id);
+              setProfile(profileData);
+            } catch (err) {
+              console.error('fetchProfile failed:', err);
+            }
           }
           setLoading(false);
         }
