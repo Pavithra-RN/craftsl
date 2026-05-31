@@ -83,18 +83,14 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      localStorage.removeItem('craftsl-auth')
-      localStorage.removeItem('craftsl_cart')
-      setNavUser(null)
-      setNavName('')
-    } catch (err) {
-      console.error('Logout error:', err)
-    } finally {
-      // Call server-side logout API to clear cookies
-      await fetch('/api/logout', { method: 'POST' })
-      window.location.replace('/')
-    }
+    sessionStorage.setItem('craftsl-logged-out', 'true')
+    localStorage.removeItem('craftsl-auth')
+    localStorage.removeItem('craftsl_cart')
+    setNavUser(null)
+    setNavName('')
+    const supabase = createClient()
+    await supabase.auth.signOut({ scope: 'global' })
+    window.location.replace('/')
   }
 
   const role = navRole;

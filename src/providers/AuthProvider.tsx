@@ -56,9 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      // Check if user manually logged out
-      const loggedOut = sessionStorage.getItem('craftsl-logged-out')
-      if (loggedOut) {
+      if (sessionStorage.getItem('craftsl-logged-out') === 'true') {
         setLoading(false)
         return
       }
@@ -86,6 +84,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // TOKEN_REFRESHED, SIGNED_OUT, USER_UPDATED
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (sessionStorage.getItem('craftsl-logged-out') === 'true' && 
+            event === 'SIGNED_IN') {
+          return
+        }
         console.log('Auth event:', event);
         
         if (event === 'SIGNED_OUT' || 
