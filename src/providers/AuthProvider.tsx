@@ -32,11 +32,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       const supabase = createClient()
-      localStorage.clear()
-      await supabase.auth.signOut()
+      await Promise.race([
+        supabase.auth.signOut(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
+      ]).catch(err => console.warn('Supabase signOut warning/timeout:', err))
     } catch (err) {
       console.error('Supabase signOut error:', err)
     } finally {
+      localStorage.clear()
       setUser(null)
       setProfile(null)
     }

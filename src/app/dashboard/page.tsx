@@ -57,7 +57,7 @@ interface OrderItemWithDetails {
 
 export default function DashboardPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
 
@@ -171,12 +171,10 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      const supabase = createClient();
-      await supabase.auth.signOut();
+      await signOut();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('craftsl-auth');
       window.location.href = '/';
     }
   };

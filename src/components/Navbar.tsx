@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingCart, Menu, X } from 'lucide-react';
 import { useCart } from '@/providers/CartProvider';
-import { createClient } from '@/utils/supabase/client';
-import { User } from '@supabase/supabase-js';
 import { useAuth } from '@/providers/AuthProvider';
 
 
@@ -14,99 +12,37 @@ import { useAuth } from '@/providers/AuthProvider';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { totalCount } = useCart();
-  const [navUser, setNavUser] = useState<User | null>(null);
-  const [navName, setNavName] = useState('');
-  const [navRole, setNavRole] = useState('');
-  const [navLoading, setNavLoading] = useState(false);
-  const { signOut } = useAuth()
-
-  useEffect(() => {
-    const supabase = createClient();
-    
-    // Get current session immediately
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      console.log('Navbar session check:', session?.user?.email, error)
-      if (session?.user) {
-        setNavUser(session.user);
-        // Get name from user metadata first (fastest)
-        const name = session.user.user_metadata?.full_name || 
-                     session.user.email?.split('@')[0] || 
-                     'User';
-        setNavName(name);
-        
-        // Then try to get from profiles table
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, role')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profile) {
-          if (profile.full_name) {
-            setNavName(profile.full_name);
-          }
-          if (profile.role) {
-            setNavRole(profile.role);
-          }
-        }
-      }
-      setNavLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setNavUser(session.user);
-          const name = session.user.user_metadata?.full_name ||
-                       session.user.email?.split('@')[0] ||
-                       'User';
-          setNavName(name);
-          
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, role')
-            .eq('id', session.user.id)
-            .single();
-          if (profile) {
-            if (profile.full_name) setNavName(profile.full_name);
-            if (profile.role) setNavRole(profile.role);
-          }
-        } else {
-          setNavUser(null);
-          setNavName('');
-          setNavRole('');
-        }
-        setNavLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user, profile, loading, signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
-      localStorage.clear()
       await signOut()
     } catch (err) {
       console.error('Logout error:', err)
     } finally {
       window.location.href = '/'
+      if (window.location.pathname === '/') {
+        window.location.reload()
+      }
     }
   }
 
-  const role = navRole;
+  const role = profile?.role || '';
 
   const renderAuthSection = () => {
-    if (navLoading) {
+    if (loading) {
       return <div style={{width: '140px', height: '36px'}} />;
     }
 
-    if (navUser) {
+    if (user) {
+      const displayName = profile?.full_name || 
+                          user.user_metadata?.full_name || 
+                          user.email?.split('@')[0] || 
+                          'User';
       return (
         <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
           <span style={{fontSize: '14px', color: '#374151'}}>
-            Hello, <strong>{navName}</strong>
+            Hello, <strong>{displayName}</strong>
           </span>
           <button
             onClick={handleLogout}
