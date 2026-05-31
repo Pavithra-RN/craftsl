@@ -22,16 +22,9 @@ export default function Navbar() {
   console.log('Navbar auth state:', { user, profile, loading, mounted });
 
   const handleLogout = async () => {
-    try {
-      await signOut()
-    } catch (err) {
-      console.error('Logout error:', err)
-    } finally {
-      window.location.href = '/'
-      if (window.location.pathname === '/') {
-        window.location.reload()
-      }
-    }
+    await signOut()
+    // replace() prevents the logged-in page from being in browser history
+    window.location.replace('/')
   }
 
   const role = profile?.role || '';

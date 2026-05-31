@@ -30,16 +30,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const signOut = async () => {
+    const supabase = createClient()
     try {
-      const supabase = createClient()
-      await Promise.race([
-        supabase.auth.signOut(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
-      ]).catch(err => console.warn('Supabase signOut warning/timeout:', err))
+      // scope:'local' is instant — clears local session and cancels the
+      // autoRefreshToken timer without waiting for a network round-trip.
+      // Without this, the timer can fire after localStorage is cleared and
+      // write a fresh session back before the page navigates away.
+      await supabase.auth.signOut({ scope: 'local' })
     } catch (err) {
-      console.error('Supabase signOut error:', err)
+      console.warn('signOut error:', err)
     } finally {
-      localStorage.clear()
+      localStorage.removeItem('craftsl-auth')
       setUser(null)
       setProfile(null)
     }
