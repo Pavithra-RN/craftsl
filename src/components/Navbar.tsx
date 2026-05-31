@@ -71,15 +71,13 @@ export default function Navbar() {
     return () => subscription.unsubscribe()
   }, [])
 
-  const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    localStorage.clear()
-    setNavUser(null)
-    setNavName('')
-    setNavRole('')
-    window.location.href = '/'
-  }
+  const handleLogout = () => {
+  localStorage.clear()
+  setNavUser(null)
+  setNavName('')
+  setNavRole('')
+  window.location.href = '/'
+}
 
   const renderAuthSection = () => {
     if (navLoading) {
