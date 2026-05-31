@@ -17,12 +17,12 @@ function LoginContent() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setLoading(true);
+    e.preventDefault()
+    setErrorMsg('')
+    setLoading(true)
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .auth.signInWithPassword({ email, password })
 
       if (error) {
@@ -31,57 +31,35 @@ function LoginContent() {
         return
       }
 
-      // Wait for AuthProvider to write craftsl-auth 
-      // to localStorage
-      let attempts = 0
-      const waitForSession = setInterval(() => {
-        attempts++
-        const raw = localStorage.getItem('craftsl-auth')
-        if (raw) {
-          clearInterval(waitForSession)
-          try {
-            const parsed = JSON.parse(raw)
-            const role = parsed?.user?.user_metadata?.role
-            console.log('Login role from metadata:', role)
-            
-            // Also fetch from profiles table to get role
-            fetch(
-              'https://mmcxkgjbuscrrpuxxczs.supabase.co/rest/v1/profiles?id=eq.' + 
-              parsed.user.id + '&select=role',
-              {
-                headers: {
-                  'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tY3hrZ2pidXNjcnJwdXh4Y3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNTY5NDEsImV4cCI6MjA5NTczMjk0MX0.LugDTvtj0XIsTQMh9OSvT2VgT42R58lGG5bFXBm3veI',
-                  'Authorization': 'Bearer ' + parsed.access_token
-                }
-              }
-            )
-            .then(r => r.json())
-            .then(profiles => {
-              const profileRole = profiles?.[0]?.role
-              console.log('Login role from profiles:', profileRole)
-              if (profileRole === 'admin') {
-                window.location.href = '/admin'
-              } else if (profileRole === 'artisan') {
-                window.location.href = '/dashboard'
-              } else {
-                window.location.href = '/'
-              }
-            })
-          } catch (err) {
-            console.error('Parse error:', err)
-            window.location.href = '/'
+      const accessToken = data.session?.access_token
+      const userId = data.user?.id
+
+      const res = await fetch(
+        `https://mmcxkgjbuscrrpuxxczs.supabase.co/rest/v1/profiles?id=eq.${userId}&select=role`,
+        {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tY3hrZ2pidXNjcnJwdXh4Y3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNTY5NDEsImV4cCI6MjA5NTczMjk0MX0.LugDTvtj0XIsTQMh9OSvT2VgT42R58lGG5bFXBm3veI',
+            'Authorization': `Bearer ${accessToken}`
           }
         }
-        
-        if (attempts > 20) {
-          clearInterval(waitForSession)
-          window.location.href = '/'
-        }
-      }, 500)
+      )
+      const profiles = await res.json()
+      const role = profiles?.[0]?.role
+      console.log('Login role:', role)
+
+      if (role === 'admin') {
+        window.location.href = '/admin'
+      } else if (role === 'artisan') {
+        window.location.href = '/dashboard'
+      } else {
+        window.location.href = '/'
+      }
+
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
-      setErrorMsg(message);
-      setLoading(false);
+      const message = err instanceof Error ? 
+        err.message : 'An unexpected error occurred.'
+      setErrorMsg(message)
+      setLoading(false)
     }
   };
 
