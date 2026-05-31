@@ -30,11 +30,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const signOut = async () => {
-    const supabase = createClient()
-    localStorage.clear()
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
+    try {
+      const supabase = createClient()
+      localStorage.clear()
+      await supabase.auth.signOut()
+    } catch (err) {
+      console.error('Supabase signOut error:', err)
+    } finally {
+      setUser(null)
+      setProfile(null)
+    }
   }
 
   useEffect(() => {

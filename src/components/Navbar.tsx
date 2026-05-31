@@ -85,9 +85,14 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    localStorage.clear()
-    await signOut()
-    window.location.href = '/'
+    try {
+      localStorage.clear()
+      await signOut()
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      window.location.href = '/'
+    }
   }
 
   const role = navRole;
