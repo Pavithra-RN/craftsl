@@ -54,77 +54,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Get initial session
+    let isSignedOut = false
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (sessionStorage.getItem('craftsl-logged-out') === 'true') {
-        setLoading(false)
-        return
-      }
-      if (session?.user) {
-        setUser(session.user);
+      if (session?.user && !isSignedOut) {
+        setUser(session.user)
         localStorage.setItem('craftsl-auth', JSON.stringify({
           access_token: session.access_token,
           refresh_token: session.refresh_token,
           user: session.user
-        }));
+        }))
         try {
-          const profileData = await fetchProfile(session.user.id);
-          setProfile(profileData);
+          const profileData = await fetchProfile(session.user.id)
+          setProfile(profileData)
         } catch (err) {
-          console.error('fetchProfile failed:', err);
+          console.error('fetchProfile failed:', err)
         }
-      } else {
-        setUser(null);
-        setProfile(null);
       }
-      setLoading(false);
-    });
+      setLoading(false)
+    })
 
-    // Listen for ALL auth state changes including 
-    // TOKEN_REFRESHED, SIGNED_OUT, USER_UPDATED
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (sessionStorage.getItem('craftsl-logged-out') === 'true' && 
-            event === 'SIGNED_IN') {
+        console.log('Auth event:', event)
+
+        if (event === 'SIGNED_OUT') {
+          isSignedOut = true
+          setUser(null)
+          setProfile(null)
+          setLoading(false)
+          localStorage.removeItem('craftsl-auth')
           return
         }
-        console.log('Auth event:', event);
-        
-        if (event === 'SIGNED_OUT' || 
-            (event as string) === 'USER_DELETED' || 
-            !session) {
-          setUser(null);
-          setProfile(null);
-          setLoading(false);
-          localStorage.removeItem('craftsl-auth');
-          return;
-        }
 
-        if (event === 'SIGNED_IN' || 
-            event === 'TOKEN_REFRESHED' ||
-            event === 'USER_UPDATED') {
+        if (isSignedOut) return
+
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           if (session?.user) {
-            setUser(session.user);
+            setUser(session.user)
             localStorage.setItem('craftsl-auth', JSON.stringify({
               access_token: session.access_token,
               refresh_token: session.refresh_token,
               user: session.user
-            }));
+            }))
             try {
-              const profileData = await fetchProfile(session.user.id);
-              setProfile(profileData);
+              const profileData = await fetchProfile(session.user.id)
+              setProfile(profileData)
             } catch (err) {
-              console.error('fetchProfile failed:', err);
+              console.error('fetchProfile failed:', err)
             }
           }
-          setLoading(false);
+          setLoading(false)
         }
       }
-    );
+    )
 
-    return () => subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(async () => {

@@ -87,13 +87,9 @@ export default function Navbar() {
     localStorage.removeItem('craftsl_cart')
     setNavUser(null)
     setNavName('')
-    
-    // Use form POST to call server-side logout
-    const form = document.createElement('form')
-    form.method = 'POST'
-    form.action = '/api/auth/logout'
-    document.body.appendChild(form)
-    form.submit()
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.replace('/')
   }
 
   const role = navRole;
