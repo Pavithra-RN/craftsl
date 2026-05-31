@@ -57,7 +57,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let isSignedOut = false
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user && !isSignedOut) {
+      const loggedOut = document.cookie
+        .includes('craftsl-logged-out=true')
+      
+      if (loggedOut || !session?.user) {
+        setUser(null)
+        setProfile(null)
+        setLoading(false)
+        return
+      }
+      
+      if (session?.user) {
         setUser(session.user)
         localStorage.setItem('craftsl-auth', JSON.stringify({
           access_token: session.access_token,
@@ -76,6 +86,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        const loggedOut = document.cookie
+          .includes('craftsl-logged-out=true')
+        if (loggedOut && event === 'SIGNED_IN') return
         console.log('Auth event:', event)
 
         if (event === 'SIGNED_OUT') {

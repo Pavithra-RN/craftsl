@@ -17,6 +17,8 @@ function LoginContent() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
+    document.cookie = 
+      'craftsl-logged-out=; path=/; max-age=0'
     sessionStorage.removeItem('craftsl-logged-out')
     e.preventDefault()
     setErrorMsg('')

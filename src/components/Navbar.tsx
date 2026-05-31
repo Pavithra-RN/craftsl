@@ -83,6 +83,8 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
+    document.cookie = 
+      'craftsl-logged-out=true; path=/; max-age=86400; SameSite=Lax'
     localStorage.removeItem('craftsl-auth')
     localStorage.removeItem('craftsl_cart')
     setNavUser(null)
