@@ -14,8 +14,11 @@ import {
   ShoppingBag,
   ArrowUpDown,
   Filter,
-  X
+  X,
+  ShoppingCart
 } from 'lucide-react';
+
+import { useCart } from '@/providers/CartProvider';
 
 const CRAFT_TYPES = [
   { value: 'batik', label: 'Batik' },
@@ -31,6 +34,12 @@ const ITEMS_PER_PAGE = 12;
 function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { cart: items, addToCart: addItem, removeFromCart: removeItem, updateQuantity } = useCart();
+
+  const getCartQuantity = (productId: string) => {
+    const item = items.find(i => i.id === productId);
+    return item ? item.quantity : 0;
+  };
 
   // Filters State
   const [search, setSearch] = useState('');
@@ -206,25 +215,7 @@ function ProductsContent() {
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  // Craft type pill styles
-  const getBadgeStyle = (craft: string) => {
-    switch (craft.toLowerCase()) {
-      case 'batik':
-        return 'bg-[#8B1A1A]/10 text-[#8B1A1A] border-[#8B1A1A]/20';
-      case 'pottery':
-        return 'bg-[#D4890A]/10 text-[#D4890A] border-[#D4890A]/20';
-      case 'woodwork':
-        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-      case 'gems':
-        return 'bg-blue-50 text-blue-800 border-blue-200';
-      case 'weaving':
-        return 'bg-indigo-50 text-indigo-800 border-indigo-200';
-      case 'lacquerwork':
-        return 'bg-[#8B1A1A]/5 text-[#8B1A1A] border-[#8B1A1A]/10';
-      default:
-        return 'bg-gray-50 text-gray-800 border-gray-200';
-    }
-  };
+
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 bg-[#FAFAFA] min-h-screen text-[#1E1E1E]">
@@ -460,67 +451,117 @@ function ProductsContent() {
                       key={prod.id} 
                       className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col group"
                     >
-                      {/* Image Area */}
-                      <div className="relative aspect-square w-full bg-gray-100 overflow-hidden">
-                        {firstImage ? (
-                          <Image
-                            src={firstImage}
-                            alt={prod.title}
-                            fill
-                            className="object-cover group-hover:scale-103 transition-transform duration-500"
-                            sizes="(max-w-7xl) 50vw, (max-w-1024px) 33vw, 25vw"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 bg-[#8B1A1A]/5 flex flex-col items-center justify-center p-4">
-                            <ShoppingBag className="h-10 w-10 text-[#8B1A1A]/20 mb-2" />
-                            <span className="text-[9px] font-extrabold text-[#8B1A1A]/55 uppercase tracking-widest bg-white border border-[#8B1A1A]/10 px-2.5 py-1 rounded-md">
+                      <Link href={`/products/${prod.id}`} className="flex flex-col flex-grow">
+                        {/* Image Area */}
+                        <div className="relative aspect-square w-full bg-gray-100 overflow-hidden">
+                          {firstImage ? (
+                            <Image
+                              src={firstImage}
+                              alt={prod.title}
+                              fill
+                              className="object-cover group-hover:scale-103 transition-transform duration-500"
+                              sizes="(max-w-7xl) 50vw, (max-w-1024px) 33vw, 25vw"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-[#8B1A1A]/5 flex flex-col items-center justify-center p-4">
+                              <ShoppingBag className="h-10 w-10 text-[#8B1A1A]/20 mb-2" />
+                              <span className="text-[9px] font-extrabold text-[#8B1A1A]/55 uppercase tracking-widest bg-white border border-[#8B1A1A]/10 px-2.5 py-1 rounded-md">
+                                {prod.craft_type}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Craft badge overlay */}
+                          <div className="absolute top-3 left-3">
+                            <span className="bg-white/80 backdrop-blur-sm text-[#8B1A1A] font-bold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider border shadow-sm">
                               {prod.craft_type}
                             </span>
                           </div>
-                        )}
-
-                        {/* Craft badge overlay */}
-                        <div className="absolute top-3 left-3">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm ${getBadgeStyle(prod.craft_type)}`}>
-                            {prod.craft_type}
-                          </span>
                         </div>
-                      </div>
 
-                      {/* Card Content Details */}
-                      <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-1.5 text-xs text-[#5A5A5A]">
-                            <span className="truncate max-w-[150px] font-medium">
-                              {prod.artisans?.display_name || 'Verified Guild'}
-                            </span>
-                            {isVerified && (
-                              <span title="Verified Artisan" className="shrink-0">
-                                <ShieldCheck className="h-4 w-4 text-[#D4890A] fill-[#D4890A]/10" />
+                        {/* Card Content Details */}
+                        <div className="p-5 flex flex-col flex-grow justify-between space-y-4 pb-3">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-1.5 text-xs text-[#5A5A5A]">
+                              <span className="truncate max-w-[150px] font-medium">
+                                {prod.artisans?.display_name || 'Verified Guild'}
                               </span>
-                            )}
+                              {isVerified && (
+                                <span title="Verified Artisan" className="shrink-0">
+                                  <ShieldCheck className="h-4 w-4 text-[#D4890A] fill-[#D4890A]/10" />
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="font-extrabold text-base text-[#1E1E1E] line-clamp-1 group-hover:text-[#8B1A1A] transition-colors" title={prod.title}>
+                              {prod.title}
+                            </h3>
                           </div>
-                          <h3 className="font-extrabold text-base text-[#1E1E1E] line-clamp-1 group-hover:text-[#8B1A1A] transition-colors" title={prod.title}>
-                            {prod.title}
-                          </h3>
-                        </div>
 
-                        {/* Actions & Price Row */}
-                        <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                          <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Price</span>
-                            <span className="font-black text-base text-[#1E1E1E]">
-                              LKR {prod.price.toLocaleString()}
-                            </span>
+                          {/* Price Row */}
+                          <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Price</span>
+                              <span className="font-black text-base text-[#1E1E1E]">
+                                LKR {prod.price.toLocaleString()}
+                              </span>
+                            </div>
                           </div>
-                          
-                          <Link
-                            href={`/products/${prod.id}`}
-                            className="inline-flex items-center justify-center rounded-xl bg-gray-50 hover:bg-[#8B1A1A] hover:text-white border border-gray-200 hover:border-[#8B1A1A] px-4 py-2.5 text-xs font-bold text-[#1E1E1E] transition-all"
-                          >
-                            View Product
-                          </Link>
                         </div>
+                      </Link>
+
+                      {/* Smart Cart Control */}
+                      <div className="p-4 pt-0">
+                        {getCartQuantity(prod.id) === 0 ? (
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault()
+                              addItem({
+                                id: prod.id,
+                                title: prod.title,
+                                price: prod.price,
+                                image: prod.images?.[0] || null,
+                                artisanId: prod.artisan_id,
+                                artisanName: prod.artisans?.display_name || 'Verified Guild'
+                              }, 1)
+                            }}
+                            className="w-full py-2.5 rounded-xl bg-[#8B1A1A] hover:bg-[#8B1A1A]/90 text-white text-xs font-bold transition-all flex items-center justify-center gap-2"
+                          >
+                            <ShoppingCart className="h-3.5 w-3.5" />
+                            Add to Cart
+                          </button>
+                        ) : (
+                          <div className="flex items-center justify-between gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault()
+                                const qty = getCartQuantity(prod.id)
+                                if (qty === 1) {
+                                  removeItem(prod.id)
+                                } else {
+                                  updateQuantity(prod.id, qty - 1)
+                                }
+                              }}
+                              className="h-9 w-9 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-lg flex items-center justify-center transition-all"
+                            >
+                              −
+                            </button>
+                            <div className="flex-1 text-center">
+                              <span className="text-sm font-black text-[#8B1A1A]">
+                                {getCartQuantity(prod.id)}
+                              </span>
+                              <p className="text-[10px] text-gray-400 font-bold">in cart</p>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault()
+                                updateQuantity(prod.id, getCartQuantity(prod.id) + 1)
+                              }}
+                              className="h-9 w-9 rounded-xl bg-[#8B1A1A] hover:bg-[#8B1A1A]/90 text-white font-bold text-lg flex items-center justify-center transition-all"
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
