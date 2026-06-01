@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { createClient } from '@/utils/supabase/client';
+
 import { 
   Search, 
   Sparkles, 
@@ -47,26 +47,17 @@ export default function HomePage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const supabase = createClient();
-        
-        // Fetch featured active products with artisan details
-        const { data: fetchedProducts, error: prodError } = await supabase
-          .from('products')
-          .select('*, artisans(id,display_name,verified,region,craft_type)')
-          .eq('is_active', true)
-          .eq('featured', true)
-          .limit(8);
-
-        if (!prodError && fetchedProducts) {
-          setProducts(fetchedProducts as unknown as Product[]);
-        } else {
-          if (prodError) console.error("Error fetching products:", prodError);
-        }
-
-        // Fetch featured artisans from Supabase REST API
         const SUPABASE_URL = 'https://mmcxkgjbuscrrpuxxczs.supabase.co'
         const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tY3hrZ2pidXNjcnJwdXh4Y3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNTY5NDEsImV4cCI6MjA5NTczMjk0MX0.LugDTvtj0XIsTQMh9OSvT2VgT42R58lGG5bFXBm3veI'
 
+        const productsRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/products?featured=eq.true&is_active=eq.true&select=*,artisans(id,display_name,verified,region,craft_type)`,
+          { headers: { 'apikey': ANON_KEY } }
+        )
+        const fetchedProducts = await productsRes.json()
+        if (Array.isArray(fetchedProducts)) setProducts(fetchedProducts as Product[])
+
+        // Fetch featured artisans from Supabase REST API
         const artisanRes = await fetch(
           `${SUPABASE_URL}/rest/v1/artisans?featured=eq.true&verified=eq.true&select=*`,
           { headers: { 'apikey': ANON_KEY } }
