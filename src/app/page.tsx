@@ -1,11 +1,12 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import { 
   Search, 
   Sparkles, 
-  MapPin, 
   Hammer, 
   ChevronRight, 
   ShoppingBag, 
@@ -20,44 +21,65 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export default async function HomePage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let products: any[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let artisans: any[] = [];
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  craft_type: string;
+  images: string[];
+  artisans: {
+    display_name: string;
+  } | null;
+}
 
-  try {
-    const supabase = createClient();
-    
-    // Fetch featured active products with artisan details
-    const { data: fetchedProducts, error: prodError } = await supabase
-      .from('products')
-      .select('*, artisans(id,display_name,verified,region,craft_type)')
-      .eq('is_active', true)
-      .eq('featured', true)
-      .limit(8);
+interface Artisan {
+  id: string;
+  display_name: string;
+  craft_type: string;
+  region: string;
+  profile_image_url: string | null;
+}
 
-    if (!prodError && fetchedProducts) {
-      products = fetchedProducts;
-    } else {
-      if (prodError) console.error("Error fetching products:", prodError);
-    }
+export default function HomePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [featuredArtisans, setFeaturedArtisans] = useState<Artisan[]>([]);
 
-    // Fetch 3 verified artisans
-    const { data: fetchedArtisans, error: artError } = await supabase
-      .from('artisans')
-      .select('*')
-      .eq('verified', true)
-      .limit(3);
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const supabase = createClient();
+        
+        // Fetch featured active products with artisan details
+        const { data: fetchedProducts, error: prodError } = await supabase
+          .from('products')
+          .select('*, artisans(id,display_name,verified,region,craft_type)')
+          .eq('is_active', true)
+          .eq('featured', true)
+          .limit(8);
 
-    if (!artError && fetchedArtisans) {
-      artisans = fetchedArtisans;
-    } else {
-      if (artError) console.error("Error fetching artisans:", artError);
-    }
-  } catch (err) {
-    console.error("Supabase connect failed in Server Component Home:", err);
-  }
+        if (!prodError && fetchedProducts) {
+          setProducts(fetchedProducts as unknown as Product[]);
+        } else {
+          if (prodError) console.error("Error fetching products:", prodError);
+        }
+
+        // Fetch featured artisans from Supabase REST API
+        const SUPABASE_URL = 'https://mmcxkgjbuscrrpuxxczs.supabase.co'
+        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tY3hrZ2pidXNjcnJwdXh4Y3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNTY5NDEsImV4cCI6MjA5NTczMjk0MX0.LugDTvtj0XIsTQMh9OSvT2VgT42R58lGG5bFXBm3veI'
+
+        const artisanRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/artisans?featured=eq.true&verified=eq.true&select=*`,
+          { headers: { 'apikey': ANON_KEY } }
+        )
+        const artisanData = await artisanRes.json()
+        if (Array.isArray(artisanData)) setFeaturedArtisans(artisanData as Artisan[])
+      } catch (err) {
+        console.error("Data load failed in Home Page:", err);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // Predefined Categories styling
   const categories = [
@@ -77,12 +99,7 @@ export default async function HomePage() {
     { id: '4', title: 'Hand-Polished Brass Oil Lamp', price: 14200, category: 'other', artisan: 'Pilimatalawa Brass Guild' },
   ];
 
-  // Placeholder artisans if DB empty
-  const placeholderArtisans = [
-    { name: 'Somasiri Wijesinghe', craft_type: 'woodwork', region: 'Ambalangoda', display_name: 'Wijesinghe Woodcarvers' },
-    { name: 'Kanthi Perera', craft_type: 'batik', region: 'Matara', display_name: 'Kanthi Batik Handloom' },
-    { name: 'Dharmadasa Alwis', craft_type: 'pottery', region: 'Kegalle', display_name: 'Alwis Earthen Pots' },
-  ];
+
 
   return (
     <div className="flex flex-col w-full bg-[#FAFAFA] text-[#1E1E1E]">
@@ -324,84 +341,34 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {artisans.length > 0 ? (
-            artisans.map((art) => (
-              <div key={art.id} className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 p-6 flex flex-col items-center text-center space-y-4">
-                <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-[#D4890A]/10">
-                  {art.profile_image_url ? (
-                    <Image
-                      src={art.profile_image_url}
-                      alt={art.display_name}
+          {featuredArtisans.map(artisan => (
+            <Link key={artisan.id} href={`/artisans/${artisan.id}`}>
+              <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                <div className="relative h-20 w-20 rounded-full overflow-hidden bg-gray-100 mx-auto mb-4">
+                  {artisan.profile_image_url ? (
+                    <Image 
+                      src={artisan.profile_image_url} 
+                      alt={artisan.display_name}
                       fill
                       className="object-cover"
-                      sizes="100px"
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-[#8B1A1A]/10 flex items-center justify-center text-[#8B1A1A] text-2xl font-bold uppercase">
-                      {art.display_name.charAt(0)}
+                    <div className="w-full h-full flex items-center justify-center bg-[#8B1A1A]/10">
+                      <span className="text-2xl font-bold text-[#8B1A1A]">
+                        {artisan.display_name.charAt(0)}
+                      </span>
                     </div>
                   )}
                 </div>
-
-                <div className="space-y-1">
-                  <h4 className="font-extrabold text-lg text-[#1E1E1E]">{art.display_name}</h4>
-                  <div className="flex items-center justify-center space-x-1.5 text-xs text-[#5A5A5A]">
-                    <span className="bg-gray-100 px-2 py-0.5 rounded text-[10px] font-bold text-gray-700 uppercase tracking-wide">
-                      {art.craft_type}
-                    </span>
-                    <span className="text-gray-300">•</span>
-                    <div className="flex items-center">
-                      <MapPin className="h-3 w-3 mr-1 text-[#8B1A1A]" />
-                      <span>{art.region}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-xs text-[#5A5A5A] line-clamp-2 leading-relaxed">
-                  {art.bio || 'Preserving generation-to-generation heritage crafts.'}
+                <h3 className="font-bold text-center text-[#1E1E1E]">
+                  {artisan.display_name}
+                </h3>
+                <p className="text-xs text-center text-gray-500 capitalize mt-1">
+                  {artisan.craft_type} · {artisan.region}
                 </p>
-
-                <div className="w-full pt-2">
-                  <Link
-                    href={`/artisans/${art.id}`}
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-gray-50 border border-gray-200 py-3 text-xs font-bold text-[#1E1E1E] hover:bg-gray-100 transition-colors"
-                  >
-                    View Profile
-                  </Link>
-                </div>
               </div>
-            ))
-          ) : (
-            // Placeholder layouts if no verified artisans are found
-            placeholderArtisans.map((art, idx) => (
-              <div key={idx} className="bg-white border border-gray-200 rounded-3xl shadow-sm p-6 flex flex-col items-center text-center space-y-4 opacity-90">
-                <div className="h-20 w-20 rounded-full bg-[#8B1A1A]/5 flex items-center justify-center text-[#8B1A1A]/30">
-                  <Sparkles className="h-8 w-8" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="font-extrabold text-lg text-[#1E1E1E]">{art.display_name}</h4>
-                  <div className="flex items-center justify-center space-x-1.5 text-xs text-[#5A5A5A]">
-                    <span className="bg-gray-100 px-2.5 py-0.5 rounded text-[9px] font-bold text-gray-600 uppercase tracking-wider">
-                      {art.craft_type}
-                    </span>
-                    <span className="text-gray-300">•</span>
-                    <div className="flex items-center text-[11px]">
-                      <MapPin className="h-3.5 w-3.5 mr-0.5 text-[#8B1A1A]" />
-                      <span>{art.region}</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-[#5A5A5A] leading-relaxed">
-                  Traditional Sri Lankan craftsperson masterfully trained in heritage disciplines.
-                </p>
-                <div className="w-full pt-2">
-                  <button className="w-full rounded-xl bg-gray-50 border border-gray-200 py-3 text-xs font-bold text-[#5A5A5A] cursor-not-allowed">
-                    Previewing
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
+            </Link>
+          ))}
         </div>
       </section>
 

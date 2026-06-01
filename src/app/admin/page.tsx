@@ -31,6 +31,7 @@ interface ArtisanWithProfile {
   verified: boolean;
   verification_status: 'pending' | 'approved' | 'rejected';
   profile_image_url: string | null;
+  featured?: boolean;
   created_at: string;
   profiles: Profile | null;
 }
@@ -303,6 +304,43 @@ export default function AdminPage() {
         p.id === productId 
           ? { ...p, featured: !currentFeatured } 
           : p
+      ))
+    } else {
+      alert('Failed to update featured status.')
+    }
+  }
+
+  const handleToggleArtisanFeatured = async (
+    artisanId: string,
+    currentFeatured: boolean | undefined
+  ) => {
+    const raw = localStorage.getItem('craftsl-auth')
+    if (!raw) return
+    const parsed = JSON.parse(raw)
+    const accessToken = parsed?.access_token
+
+    const SUPABASE_URL = 'https://mmcxkgjbuscrrpuxxczs.supabase.co'
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tY3hrZ2pidXNjcnJwdXh4Y3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNTY5NDEsImV4cCI6MjA5NTczMjk0MX0.LugDTvtj0XIsTQMh9OSvT2VgT42R58lGG5bFXBm3veI'
+
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/artisans?id=eq.${artisanId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ featured: !currentFeatured })
+      }
+    )
+
+    if (res.ok) {
+      setArtisans(prev => prev.map(a =>
+        a.id === artisanId
+          ? { ...a, featured: !currentFeatured }
+          : a
       ))
     } else {
       alert('Failed to update featured status.')
@@ -612,12 +650,13 @@ export default function AdminPage() {
                         <th className="pb-3 text-center">Listed Products</th>
                         <th className="pb-3 text-right">Cumulative Sales</th>
                         <th className="pb-3 text-center">Verification Status</th>
+                        <th className="pb-3 text-center">Homepage</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {approvedArtisans.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="py-12 text-center text-gray-400 font-bold">
+                          <td colSpan={7} className="py-12 text-center text-gray-400 font-bold">
                             No verified artisans found on the database.
                           </td>
                         </tr>
@@ -647,6 +686,20 @@ export default function AdminPage() {
                               <span className="inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-50 text-emerald-600 border border-emerald-100">
                                 verified
                               </span>
+                            </td>
+                            <td className="py-4 text-center">
+                              <button
+                                onClick={() => handleToggleArtisanFeatured(
+                                  artisan.id, artisan.featured
+                                )}
+                                className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase border transition-all ${
+                                  artisan.featured
+                                    ? 'bg-amber-50 text-amber-600 border-amber-200'
+                                    : 'bg-gray-100 text-gray-400 border-gray-200'
+                                }`}
+                              >
+                                {artisan.featured ? '★ Featured' : 'Add to Home'}
+                              </button>
                             </td>
                           </tr>
                         ))
