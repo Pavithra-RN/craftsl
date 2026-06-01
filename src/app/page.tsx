@@ -110,7 +110,7 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 h-72 w-72 rounded-full bg-white/5 blur-2xl" />
 
         <div className="relative max-w-5xl mx-auto text-center space-y-8">
-          <div className="inline-flex items-center space-x-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-[#D4890A] border border-white/10 backdrop-blur-md">
+          <div className="inline-flex items-center space-x-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-1.5 text-xs font-bold text-white border border-white/30">
             <Sparkles className="h-3.5 w-3.5" />
             <span>Sri Lankan Artisan Marketplace</span>
           </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, Shield, Heart, HelpCircle, Users } from 'lucide-react';
+import { Sparkles, Shield, Heart, HelpCircle } from 'lucide-react';
 
 export default function AboutPage() {
   return (
@@ -115,19 +115,53 @@ export default function AboutPage() {
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">The creators behind the registry</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-8">
           {[
-            { name: 'Pavithra Rangana', role: 'Founder & Tech Lead' },
-            { name: 'Kanishka Silva', role: 'Artisan Outreach Coordinator' },
-            { name: 'Dilshan Perera', role: 'Global Logistics Manager' }
+            {
+              name: 'Pavithra Nandasena',
+              initials: 'PN',
+              designation: 'Chief Executive Officer & Co-Founder',
+              description: 'Leads the overall vision and strategy of CraftSL, passionate about connecting Sri Lankan artisans with global markets.'
+            },
+            {
+              name: 'Lahiru Perera',
+              initials: 'LP',
+              designation: 'Chief Technology Officer & Co-Founder',
+              description: 'Drives the technology platform development, ensuring a seamless experience for artisans and buyers worldwide.'
+            },
+            {
+              name: 'Cherub Weeratunge',
+              initials: 'CW',
+              designation: 'Head of Artisan Relations',
+              description: 'Manages artisan onboarding and verification, building trusted relationships with craft communities across Sri Lanka.'
+            },
+            {
+              name: 'Thisun Sandesh',
+              initials: 'TS',
+              designation: 'Head of Marketing & Growth',
+              description: 'Leads digital marketing strategy and brand awareness, growing CraftSL\'s presence in international diaspora markets.'
+            },
+            {
+              name: 'Rashmi Wijesuriya',
+              initials: 'RW',
+              designation: 'Head of Operations & Logistics',
+              description: 'Oversees order fulfilment, shipping partnerships, and ensures timely delivery of authentic Sri Lankan crafts globally.'
+            },
+            {
+              name: 'Sithari Adikari',
+              initials: 'SA',
+              designation: 'Head of Finance & Compliance',
+              description: 'Manages financial planning, fair trade compliance, and ensures artisans receive their full 85% earnings on every sale.'
+            }
           ].map((member, idx) => (
-            <div key={idx} className="bg-white border border-gray-100 p-8 rounded-3xl shadow-sm space-y-4">
-              <div className="h-16 w-16 bg-[#D4890A]/10 text-[#D4890A] rounded-full mx-auto flex items-center justify-center">
-                <Users className="h-8 w-8" />
+            <div key={idx} className="bg-white border border-gray-100 p-6 rounded-3xl shadow-sm space-y-4 flex flex-col items-center text-center">
+              <div className="h-16 w-16 bg-[#8B1A1A] text-white rounded-full flex items-center justify-center font-bold text-lg shadow-sm">
+                {member.initials}
               </div>
-              <div>
+              <div className="space-y-1">
                 <h3 className="font-extrabold text-base text-[#1E1E1E]">{member.name}</h3>
-                <p className="text-xs text-gray-400 mt-1 font-semibold">{member.role}</p>
+                <p className="text-xs font-bold text-[#D4890A]">{member.designation}</p>
+                <p className="text-[11px] text-[#5A5A5A] leading-relaxed pt-1">{member.description}</p>
               </div>
             </div>
           ))}
