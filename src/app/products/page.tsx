@@ -233,7 +233,7 @@ function ProductsContent() {
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1E1E1E]">
           Sri Lankan Artisan <span className="text-[#8B1A1A]">Catalog</span>
         </h1>
-        <p className="text-sm text-[#5A5A5A] max-w-xl">
+        <p className="text-gray-500 text-sm sm:whitespace-nowrap">
           Support verified home-grown talent and purchase directly from island-wide workshops.
         </p>
       </div>
