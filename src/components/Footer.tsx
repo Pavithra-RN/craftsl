@@ -66,15 +66,16 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Shop Column */}
           <div className="space-y-4">
             <h4 className="text-sm font-bold uppercase tracking-wider text-[#1E1E1E]">Shop</h4>
             <ul className="space-y-2.5 text-sm">
               {[
-                { label: 'Traditional Masks', href: '/shop?category=masks' },
-                { label: 'Batik & Textiles', href: '/shop?category=batik' },
-                { label: 'Clay & Ceramics', href: '/shop?category=ceramics' },
-                { label: 'Brass & Metalwork', href: '/shop?category=metalwork' },
+                { label: 'Batik & Textiles', href: '/products?craft_type=batik' },
+                { label: 'Clay & Ceramics', href: '/products?craft_type=pottery' },
+                { label: 'Wood Carvings & Masks', href: '/products?craft_type=woodwork' },
+                { label: 'Gems & Jewellery', href: '/products?craft_type=gems' },
+                { label: 'Handloom Weaving', href: '/products?craft_type=weaving' },
+                { label: 'Lacquerwork', href: '/products?craft_type=lacquerwork' },
               ].map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="hover:text-[#8B1A1A] transition-colors duration-150">
