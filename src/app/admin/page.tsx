@@ -129,7 +129,7 @@ export default function AdminPage() {
       // Fetch stats
       const [artisansRes, productsRes, ordersRes] = await Promise.all([
         fetch(`${SUPABASE_URL}/rest/v1/artisans?select=*`, { headers }),
-        fetch(`${SUPABASE_URL}/rest/v1/products?select=*`, { headers }),
+        fetch(`${SUPABASE_URL}/rest/v1/products?select=*,artisans(id,display_name,craft_type)&order=created_at.desc`, { headers }),
         fetch(`${SUPABASE_URL}/rest/v1/orders?select=*`, { headers })
       ])
 
