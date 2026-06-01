@@ -29,12 +29,12 @@ export default async function HomePage() {
   try {
     const supabase = createClient();
     
-    // Fetch 8 latest active products with artisan name
+    // Fetch featured active products with artisan details
     const { data: fetchedProducts, error: prodError } = await supabase
       .from('products')
-      .select('*, artisans(display_name)')
+      .select('*, artisans(id,display_name,verified,region,craft_type)')
       .eq('is_active', true)
-      .order('created_at', { ascending: false })
+      .eq('featured', true)
       .limit(8);
 
     if (!prodError && fetchedProducts) {

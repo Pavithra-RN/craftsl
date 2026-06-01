@@ -46,6 +46,7 @@ interface ProductWithArtisan {
   images: string[];
   stock_quantity: number;
   is_active: boolean;
+  featured?: boolean;
   created_at: string;
   artisans: {
     display_name: string;
@@ -268,6 +269,43 @@ export default function AdminPage() {
       }))
     } else {
       alert('Failed to update product visibility status.')
+    }
+  }
+
+  const handleToggleFeatured = async (
+    productId: string, 
+    currentFeatured: boolean | undefined
+  ) => {
+    const raw = localStorage.getItem('craftsl-auth')
+    if (!raw) return
+    const parsed = JSON.parse(raw)
+    const accessToken = parsed?.access_token
+
+    const SUPABASE_URL = 'https://mmcxkgjbuscrrpuxxczs.supabase.co'
+    const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tY3hrZ2pidXNjcnJwdXh4Y3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNTY5NDEsImV4cCI6MjA5NTczMjk0MX0.LugDTvtj0XIsTQMh9OSvT2VgT42R58lGG5bFXBm3veI'
+
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/products?id=eq.${productId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ featured: !currentFeatured })
+      }
+    )
+
+    if (res.ok) {
+      setProducts(prev => prev.map(p =>
+        p.id === productId 
+          ? { ...p, featured: !currentFeatured } 
+          : p
+      ))
+    } else {
+      alert('Failed to update featured status.')
     }
   }
 
@@ -640,13 +678,14 @@ export default function AdminPage() {
                       <th className="pb-3 font-bold text-right">Price</th>
                       <th className="pb-3 text-center">Stock</th>
                       <th className="pb-3 text-center">Status</th>
+                      <th className="pb-3 text-center">Featured</th>
                       <th className="pb-3 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {products.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-12 text-center text-gray-400 font-bold">
+                        <td colSpan={8} className="py-12 text-center text-gray-400 font-bold">
                           No products found in database.
                         </td>
                       </tr>
@@ -679,6 +718,18 @@ export default function AdminPage() {
                               }`}>
                                 {product.is_active ? 'active' : 'hidden'}
                               </span>
+                            </td>
+                            <td className="py-4 text-center">
+                              <button
+                                onClick={() => handleToggleFeatured(product.id, product.featured)}
+                                className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase border transition-all ${
+                                  product.featured
+                                    ? 'bg-amber-50 text-amber-600 border-amber-200'
+                                    : 'bg-gray-100 text-gray-400 border-gray-200'
+                                }`}
+                              >
+                                {product.featured ? '★ Featured' : 'Not Featured'}
+                              </button>
                             </td>
                             <td className="py-4 text-right">
                               <button
