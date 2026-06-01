@@ -121,7 +121,7 @@ function CheckoutForm() {
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
-          buyer_id: currentUser.id,
+          buyer_id: currentUser!.id,
           total_amount: subtotal,
           currency: 'LKR',
           status: 'paid', // Automatically complete paid status for mock transaction

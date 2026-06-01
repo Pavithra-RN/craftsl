@@ -10,7 +10,12 @@ import {
   ChevronRight, 
   ShoppingBag, 
   ShieldCheck, 
-  ArrowRight 
+  ArrowRight,
+  Palette,
+  Soup,
+  Gem,
+  Scissors,
+  Paintbrush
 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -56,12 +61,12 @@ export default async function HomePage() {
 
   // Predefined Categories styling
   const categories = [
-    { name: 'Batik', value: 'batik', desc: 'Vibrant dyed textiles & fabrics', bg: 'bg-[#8B1A1A]/10 border-[#8B1A1A]/20 text-[#8B1A1A]' },
-    { name: 'Pottery', value: 'pottery', desc: 'Earthen clay cookware & pottery', bg: 'bg-[#D4890A]/10 border-[#D4890A]/20 text-[#D4890A]' },
-    { name: 'Woodwork', value: 'woodwork', desc: 'Traditional hand-carved masks & items', bg: 'bg-emerald-50 border-emerald-200 text-emerald-800' },
-    { name: 'Gems', value: 'gems', desc: 'Polished local gemstones & jewelry', bg: 'bg-blue-50 border-blue-200 text-blue-800' },
-    { name: 'Weaving', value: 'weaving', desc: 'Handloom textiles & reed mats', bg: 'bg-indigo-50 border-indigo-200 text-indigo-800' },
-    { name: 'Lacquerwork', value: 'lacquerwork', desc: 'Detailed lacquer painted vessels', bg: 'bg-[#8B1A1A]/5 border-[#8B1A1A]/10 text-[#8B1A1A]' },
+    { name: 'Batik', value: 'batik', desc: 'Vibrant dyed textiles & fabrics', bg: 'bg-[#8B1A1A]/10 border-[#8B1A1A]/20 text-[#8B1A1A]', icon: Palette },
+    { name: 'Pottery', value: 'pottery', desc: 'Earthen clay cookware & pottery', bg: 'bg-[#D4890A]/10 border-[#D4890A]/20 text-[#D4890A]', icon: Soup },
+    { name: 'Woodwork', value: 'woodwork', desc: 'Traditional hand-carved masks & items', bg: 'bg-emerald-50 border-emerald-200 text-emerald-800', icon: Hammer },
+    { name: 'Gems', value: 'gems', desc: 'Polished local gemstones & jewelry', bg: 'bg-blue-50 border-blue-200 text-blue-800', icon: Gem },
+    { name: 'Weaving', value: 'weaving', desc: 'Handloom textiles & reed mats', bg: 'bg-indigo-50 border-indigo-200 text-indigo-800', icon: Scissors },
+    { name: 'Lacquerwork', value: 'lacquerwork', desc: 'Detailed lacquer painted vessels', bg: 'bg-[#8B1A1A]/5 border-[#8B1A1A]/10 text-[#8B1A1A]', icon: Paintbrush },
   ];
 
   // Placeholder products if DB empty
@@ -83,7 +88,15 @@ export default async function HomePage() {
     <div className="flex flex-col w-full bg-[#FAFAFA] text-[#1E1E1E]">
       
       {/* 1. HERO SECTION */}
-      <section className="relative w-full bg-[#8B1A1A] text-white py-24 sm:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section 
+        style={{
+          backgroundImage: 'linear-gradient(rgba(139, 26, 26, 0.75), rgba(30, 10, 10, 0.85)), url(/hero-bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+        className="relative w-full text-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      >
         {/* Background decorative gold highlights */}
         <div className="absolute top-0 right-0 h-96 w-96 rounded-full bg-[#D4890A]/10 blur-3xl" />
         <div className="absolute bottom-0 left-0 h-72 w-72 rounded-full bg-white/5 blur-2xl" />
@@ -100,7 +113,7 @@ export default async function HomePage() {
               <span className="text-[#D4890A]">Sri Lankan</span> Crafts
             </h1>
             <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
-              Handmade by verified artisans. Shipped worldwide.
+              Handmade by verified artisans. Shipped worldwide. Purchase authentic traditional masks, batik, clay ceramics, brassware, and handmade jewelry.
             </p>
           </div>
 
@@ -175,27 +188,30 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {categories.map((cat) => (
-            <Link
-              key={cat.value}
-              href={`/products?craft_type=${cat.value}`}
-              className={`flex flex-col justify-between p-5 rounded-2xl border ${cat.bg} hover:shadow-lg hover:scale-102 transition-all duration-300 group text-left`}
-            >
-              <div className="space-y-2">
-                <span className="inline-flex p-2 rounded-xl bg-white/60 text-current">
-                  <Hammer className="h-5 w-5" />
-                </span>
-                <h4 className="font-extrabold text-base tracking-tight">{cat.name}</h4>
-                <p className="text-[10px] opacity-80 leading-relaxed hidden sm:block">
-                  {cat.desc}
-                </p>
-              </div>
-              <div className="mt-4 flex items-center text-xs font-bold uppercase tracking-wider group-hover:translate-x-1 transition-transform">
-                <span>Explore</span>
-                <ChevronRight className="h-4 w-4 ml-0.5" />
-              </div>
-            </Link>
-          ))}
+          {categories.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <Link
+                key={cat.value}
+                href={`/products?craft_type=${cat.value}`}
+                className={`flex flex-col justify-between p-5 rounded-2xl border ${cat.bg} hover:shadow-lg hover:scale-102 transition-all duration-300 group text-left`}
+              >
+                <div className="space-y-2">
+                  <span className="inline-flex p-2 rounded-xl bg-white/60 text-current">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <h4 className="font-extrabold text-base tracking-tight">{cat.name}</h4>
+                  <p className="text-[10px] opacity-80 leading-relaxed hidden sm:block">
+                    {cat.desc}
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center text-xs font-bold uppercase tracking-wider group-hover:translate-x-1 transition-transform">
+                  <span>Explore</span>
+                  <ChevronRight className="h-4 w-4 ml-0.5" />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

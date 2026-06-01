@@ -35,14 +35,14 @@ function ProductsContent() {
   // Filters State
   const [search, setSearch] = useState('');
   const [selectedCrafts, setSelectedCrafts] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState(50000);
+  const [maxPrice, setMaxPrice] = useState(500000);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [sortBy, setSortBy] = useState('newest'); // newest, price_asc, price_desc
   const [page, setPage] = useState(1);
 
   // Debounced States (to limit API calls during drag/typing)
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(50000);
+  const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(500000);
 
   // API Data State
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -196,7 +196,7 @@ function ProductsContent() {
   const handleResetFilters = () => {
     setSearch('');
     setSelectedCrafts([]);
-    setMaxPrice(50000);
+    setMaxPrice(500000);
     setVerifiedOnly(false);
     setSortBy('newest');
     setPage(1);
@@ -298,7 +298,7 @@ function ProductsContent() {
               <input
                 type="range"
                 min="0"
-                max="50000"
+                max="500000"
                 step="1000"
                 value={maxPrice}
                 onChange={(e) => {
@@ -309,7 +309,7 @@ function ProductsContent() {
               />
               <div className="flex justify-between text-[10px] font-semibold text-gray-400">
                 <span>0 LKR</span>
-                <span>50,000 LKR</span>
+                <span>500,000 LKR</span>
               </div>
             </div>
 
@@ -628,7 +628,7 @@ function ProductsContent() {
                 <input
                   type="range"
                   min="0"
-                  max="50000"
+                  max="500000"
                   step="1000"
                   value={maxPrice}
                   onChange={(e) => {
