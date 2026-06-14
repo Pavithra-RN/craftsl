@@ -129,19 +129,23 @@ export default function AdminPage() {
       }
 
       // Fetch stats
-      const [artisansRes, productsRes, ordersRes] = await Promise.all([
-        fetch(`${SUPABASE_URL}/rest/v1/artisans?select=*`, { headers }),
-        fetch(`${SUPABASE_URL}/rest/v1/products?select=*,artisans(id,display_name,craft_type)&order=created_at.desc`, { headers }),
-        fetch(`${SUPABASE_URL}/rest/v1/orders?select=*`, { headers })
-      ])
+      const [artisansRes, productsRes, ordersRes, itemsRes] = 
+        await Promise.all([
+          fetch(`${SUPABASE_URL}/rest/v1/artisans?select=*`, { headers }),
+          fetch(`${SUPABASE_URL}/rest/v1/products?select=*,artisans(id,display_name,craft_type)&order=created_at.desc`, { headers }),
+          fetch(`${SUPABASE_URL}/rest/v1/orders?select=*`, { headers }),
+          fetch(`${SUPABASE_URL}/rest/v1/order_items?select=*`, { headers })
+        ])
 
       const artisansData = await artisansRes.json()
       const productsData = await productsRes.json()
       const ordersData = await ordersRes.json()
+      const itemsData = await itemsRes.json()
 
       if (Array.isArray(artisansData)) setArtisans(artisansData as unknown as ArtisanWithProfile[])
       if (Array.isArray(productsData)) setProducts(productsData as unknown as ProductWithArtisan[])
       if (Array.isArray(ordersData)) setOrders(ordersData as unknown as OrderWithProfile[])
+      if (Array.isArray(itemsData)) setOrderItems(itemsData as unknown as OrderItem[])
       
       setAdminEmail(parsed?.user?.email || '')
       setAdminVerified(true)
